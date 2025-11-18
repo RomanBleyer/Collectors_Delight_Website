@@ -246,65 +246,57 @@
         
         <div class="cart-content">
             <div class="cart-items">
-                <!-- Sample cart items - replace with dynamic content -->
-                <div class="cart-item">
-                    <div class="item-image">
-                        <i class="fa fa-image"></i>
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name">The Starry Night</div>
-                        <div class="item-artist">Vincent van Gogh</div>
-                        <div class="item-price">$2,500.00</div>
-                    </div>
-                    <div class="item-controls">
-                        <div class="quantity-control">
-                            <button class="quantity-btn" onclick="updateQuantity(1, -1)">-</button>
-                            <input type="number" class="quantity-input" value="1" min="1" id="qty-1">
-                            <button class="quantity-btn" onclick="updateQuantity(1, 1)">+</button>
+                {% if cart_products %}
+                    {% for item in cart_products %}
+                    <div class="cart-item">
+                        <div class="item-image">
+                            {% if item.product.image_url %}
+                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            {% else %}
+                                <i class="fa fa-image"></i>
+                            {% endif %}
                         </div>
-                        <button class="remove-btn" onclick="removeItem(1)">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="cart-item">
-                    <div class="item-image">
-                        <i class="fa fa-image"></i>
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name">Mona Lisa</div>
-                        <div class="item-artist">Leonardo da Vinci</div>
-                        <div class="item-price">$5,000.00</div>
-                    </div>
-                    <div class="item-controls">
-                        <div class="quantity-control">
-                            <button class="quantity-btn" onclick="updateQuantity(2, -1)">-</button>
-                            <input type="number" class="quantity-input" value="1" min="1" id="qty-2">
-                            <button class="quantity-btn" onclick="updateQuantity(2, 1)">+</button>
+                        <div class="item-details">
+                            <div class="item-name">{{ item.product.name }}</div>
+                            <div class="item-artist">{{ item.product.original_artist }}</div>
+                            <div class="item-price">${{ "{:.2f}".format(item.product.price) }}</div>
                         </div>
-                        <button class="remove-btn" onclick="removeItem(2)">
-                            <i class="fa fa-trash"></i>
-                        </button>
+                        <div class="item-controls">
+                            <div class="quantity-control">
+                                <form method="POST" action="/update_cart" style="display: inline;">
+                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                    <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+                                    <button class="quantity-btn" type="submit" {% if item.quantity <= 1 %}disabled{% endif %}>-</button>
+                                </form>
+                                <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" readonly>
+                                <form method="POST" action="/update_cart" style="display: inline;">
+                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                    <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+                                    <button class="quantity-btn" type="submit">+</button>
+                                </form>
+                            </div>
+                            <a href="/remove_from_cart/{{ item.product.id }}" class="remove-btn">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Empty cart state - uncomment when cart is empty -->
-                <!-- 
-                <div class="empty-cart">
-                    <i class="fa fa-shopping-cart"></i>
-                    <h3>Your cart is empty</h3>
-                    <p>Add some amazing artworks to get started!</p>
-                </div>
-                -->
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-cart">
+                        <i class="fa fa-shopping-cart"></i>
+                        <h3>Your cart is empty</h3>
+                        <p>Add some amazing artworks to get started!</p>
+                    </div>
+                {% endif %}
             </div>
             
             <div class="cart-summary">
                 <h3 style="color: #333; margin-bottom: 20px;">Order Summary</h3>
                 
+                {% if cart_products %}
                 <div class="summary-row">
-                    <span>Subtotal (2 items):</span>
-                    <span>$7,500.00</span>
+                    <span>Subtotal ({{ cart_products|length }} item{{ 's' if cart_products|length != 1 else '' }}):</span>
+                    <span>${{ "{:.2f}".format(subtotal) }}</span>
                 </div>
                 
                 <div class="summary-row">
@@ -313,13 +305,13 @@
                 </div>
                 
                 <div class="summary-row">
-                    <span>Tax:</span>
-                    <span>$750.00</span>
+                    <span>Tax (10%):</span>
+                    <span>${{ "{:.2f}".format(tax) }}</span>
                 </div>
                 
                 <div class="summary-row total">
                     <span>Total:</span>
-                    <span>$8,250.00</span>
+                    <span>${{ "{:.2f}".format(total) }}</span>
                 </div>
                 
                 <button class="checkout-btn">
@@ -333,6 +325,14 @@
                         Secure checkout with SSL encryption
                     </small>
                 </div>
+                {% else %}
+                <div style="text-align: center; color: #666;">
+                    <p>No items to checkout</p>
+                    <a href="/storefront" style="color: #F0AD64; text-decoration: none;">
+                        <i class="fa fa-arrow-left"></i> Start Shopping
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

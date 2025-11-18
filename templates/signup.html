@@ -207,27 +207,39 @@
                 <div class="form-row">
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="first_name">First Name</label>
-                        <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Enter your first name" required>
+                        <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Enter your first name" required value="{{ request.form.first_name if request.form.first_name is defined else '' }}">
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="last_name">Last Name</label>
-                        <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Enter your last name" required>
+                        <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Enter your last name" required value="{{ request.form.last_name if request.form.last_name is defined else '' }}">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="email">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required value="{{ request.form.email if request.form.email is defined else '' }}">
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
+                    <div style="position: relative;">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required style="padding-right: 40px;" value="{{ request.form.password if request.form.password is defined else '' }}">
+                        <input type="hidden" id="password_visible" name="password_visible" value="{{ request.form.password_visible if request.form.password_visible is defined else '0' }}">
+                        <button type="button" onclick="togglePassword('password', this, 'password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="confirm_password">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+                    <div style="position: relative;">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required style="padding-right: 40px;">
+                        <input type="hidden" id="confirm_password_visible" name="confirm_password_visible" value="{{ request.form.confirm_password_visible if request.form.confirm_password_visible is defined else '0' }}">
+                        <button type="button" onclick="togglePassword('confirm_password', this, 'confirm_password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-check mb-3">
@@ -241,6 +253,19 @@
                     <i class="fa fa-user-plus me-2"></i>
                     Create Account
                 </button>
+                {% if error %}
+                <div class="alert alert-danger" role="alert" style="margin-top: 20px;">
+                    {% if error is string %}
+                        {{ error }}
+                    {% elif error is sequence %}
+                        <ul style="margin-bottom:0; padding-left: 20px;">
+                        {% for err in error %}
+                            <li>{{ err }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
             </form>
             
             <div class="divider">
@@ -258,6 +283,39 @@
                 <p style="font-size: 1.5rem; margin-top: 20px;">Join Our Community</p>
             </div>
         </div>
+    <script>
+    function togglePassword(fieldId, btn, hiddenId) {
+        var input = document.getElementById(fieldId);
+        var icon = btn.querySelector('i');
+        var hidden = document.getElementById(hiddenId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            if (hidden) hidden.value = '1';
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            if (hidden) hidden.value = '0';
+        }
+    }
+    // On page load, restore eye state
+    window.addEventListener('DOMContentLoaded', function() {
+        var pwVisible = "{{ request.form.password_visible if request.form.password_visible is defined else '0' }}";
+        var cpwVisible = "{{ request.form.confirm_password_visible if request.form.confirm_password_visible is defined else '0' }}";
+        if (pwVisible === '1') {
+            var pwInput = document.getElementById('password');
+            var pwBtn = pwInput && pwInput.parentElement.querySelector('button');
+            if (pwInput && pwBtn) togglePassword('password', pwBtn, 'password_visible');
+        }
+        if (cpwVisible === '1') {
+            var cpwInput = document.getElementById('confirm_password');
+            var cpwBtn = cpwInput && cpwInput.parentElement.querySelector('button');
+            if (cpwInput && cpwBtn) togglePassword('confirm_password', cpwBtn, 'confirm_password_visible');
+        }
+    });
+    </script>
     </div>
 </body>
 </html>

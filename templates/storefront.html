@@ -249,18 +249,34 @@
         </div>
         
         <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-            <a href="/login" style="text-decoration: none;">
-                <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                    <i class="fa fa-sign-in-alt"></i>
-                    Login
-                </button>
-            </a>
-            <a href="/signup" style="text-decoration: none;">
-                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
-                    <i class="fa fa-user-plus"></i>
-                    Sign Up
-                </button>
-            </a>
+            {% if session.get('user') %}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333;">{{ session['user'] }}</span>
+                    <a href="#" style="text-decoration: none;">
+                        <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="fa fa-user"></i>
+                        </button>
+                    </a>
+                    <a href="/logout" style="text-decoration: none;">
+                        <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
+                            <i class="fa fa-sign-out-alt"></i> Logout
+                        </button>
+                    </a>
+                </div>
+            {% else %}
+                <a href="/login" style="text-decoration: none;">
+                    <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                        <i class="fa fa-sign-in-alt"></i>
+                        Login
+                    </button>
+                </a>
+                <a href="/signup" style="text-decoration: none;">
+                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
+                        <i class="fa fa-user-plus"></i>
+                        Sign Up
+                    </button>
+                </a>
+            {% endif %}
             <a href="/cart" style="text-decoration: none;">
                 <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
                     <i class="fa fa-shopping-cart"></i>
@@ -362,9 +378,9 @@
                                     <span class="product-tag">{{ product.painting_type if product.painting_type else 'Unknown' }}</span>
                                 </div>
                             </div>
-                            <button class="add-to-cart-btn" onclick="addToCart({{ product.id }})">
+                            <a href="/add_to_cart/{{ product.id }}" class="add-to-cart-btn" style="text-decoration: none; color: inherit; display: inline-block; text-align: center;">
                                 <i class="fa fa-shopping-cart"></i> Add to Cart
-                            </button>
+                            </a>
                         </div>
                     </div>
                     {% endfor %}
