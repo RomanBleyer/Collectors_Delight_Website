@@ -1,24 +1,29 @@
-User registration and login
-Password encryption
-Product listings with grid layout
-Product detail pages
-Product image display (fixed size, high quality)
-Product search with autocomplete recommendations
-Product filters (category, price, rating, availability)
-Pagination and per-page selection for products
-Quick add to cart from product listings
-Shopping cart with add/remove/update functionality
-Checkout and order confirmation
-User reviews and ratings (displayed on product pages)
-Average rating and review count display
-Favorites/wishlist (add to favorites from listings)
-Seller dashboard and profile
-Auctions (live, ending soon, boat auctions)
-Admin dashboard and product management
-Responsive design for desktop and mobile
-Dark mode and light mode support
-Branding: logo, name, favicon, manifest updates
-Sample data setup for products and reviews
-PWA support (manifest, service worker)
-Footer and navigation bar with sidebar
-Privacy, terms, help, about, contact pages
+REQUIREMENTS FOR YOUR IST TASK
+complete these and only these
+
+you should have products(lmao) done
+you need a proper working shopping card that can remove items add them etc done
+
+you NEED a checkout form that asks for email address address name
+
+you NEED to log all orders into their own database section
+
+
+TASKBAR FEATURES
+actually make the search bar work(lol)
+have an admin mode which just lets you remove and add products in the website
+YOU NEED to store passwords in hashes, you need password validation, and basic password strength checking
+
+
+you NEED local cashing of products
+an installable PWA app
+Push notifications
+
+EXTRA LOG IN LOG OUT FEATURES
+login logout signup features
+you NEED a checkout form that asks for email address address name
+you NEED to log all orders into their own database section
+
+RESPONSIVE design
+
+Make the website work offline without images 

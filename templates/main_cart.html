@@ -148,6 +148,9 @@
             width: 50px;
             text-align: center;
             padding: 5px;
+            pointer-events: none;
+            user-select: none;
+            background: #f8f8f8;
         }
         
         .remove-btn {
@@ -263,17 +266,7 @@
                         </div>
                         <div class="item-controls">
                             <div class="quantity-control">
-                                <form method="POST" action="/update_cart" style="display: inline;">
-                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                                    <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
-                                    <button class="quantity-btn" type="submit" {% if item.quantity <= 1 %}disabled{% endif %}>-</button>
-                                </form>
-                                <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" readonly>
-                                <form method="POST" action="/update_cart" style="display: inline;">
-                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                                    <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
-                                    <button class="quantity-btn" type="submit">+</button>
-                                </form>
+                                <input type="number" class="quantity-input" value="1" min="1" max="1" readonly>
                             </div>
                             <a href="/remove_from_cart/{{ item.product.id }}" class="remove-btn">
                                 <i class="fa fa-trash"></i>

@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-for-sessions'  # Change this to a random secret key
 
 def get_db_connection():
-    conn = sqlite3.connect('missing_artworks.db')
+    conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -14,14 +14,14 @@ def index():
     conn = get_db_connection()
     products = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
-    return render_template('homepage.html', products=products)
+    return render_template('main_homepage.html', products=products)
 
 @app.route('/storefront')
 def storefront():
     conn = get_db_connection()
     products = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
-    return render_template('storefront.html', products=products)
+    return render_template('main_storefront.html', products=products)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -35,16 +35,22 @@ def login():
         conn.close()
         if user:
             session['user'] = user['email']
+            session['first_name'] = user['first_name'] if 'first_name' in user.keys() else ''
+            session['last_name'] = user['last_name'] if 'last_name' in user.keys() else ''
+            session['is_admin'] = bool(user['admin']) if 'admin' in user.keys() else False
             return redirect(url_for('index'))
         else:
             error = 'Invalid credentials.'
-    return render_template('login.html', error=error)
+    return render_template('main_login.html', error=error)
 
 
 # Logout route
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    session.pop('first_name', None)
+    session.pop('last_name', None)
+    session.pop('is_admin', None)
     return redirect(url_for('index'))
 
 
@@ -78,13 +84,18 @@ def signup():
                 conn.execute('INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)',
                              (email, password, first_name, last_name))
                 conn.commit()
+                # Fetch the new user to check admin status (should be False by default)
+                user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
                 conn.close()
                 session['user'] = email
+                session['first_name'] = user['first_name'] if user and 'first_name' in user.keys() else ''
+                session['last_name'] = user['last_name'] if user and 'last_name' in user.keys() else ''
+                session['is_admin'] = bool(user['admin']) if user and 'admin' in user.keys() else False
                 return redirect(url_for('index'))
             except sqlite3.IntegrityError:
                 error = 'Email already registered.'
             conn.close()
-    return render_template('signup.html', error=error)
+    return render_template('main_signup.html', error=error)
 
 @app.route('/cart')
 def cart():
@@ -113,7 +124,7 @@ def cart():
     tax_amount = total_amount * 0.10
     final_total = total_amount + tax_amount
     
-    return render_template('cart.html', 
+    return render_template('main_cart.html', 
                          cart_products=cart_products, 
                          subtotal=total_amount,
                          tax=tax_amount,
@@ -175,10 +186,20 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         if sys.argv[1] == 'clear_users':
             conn = get_db_connection()
-            conn.execute('DELETE FROM users')
+            conn.execute("DELETE FROM users WHERE admin IS NULL OR admin = 0")
             conn.commit()
             conn.close()
-            print('All user data cleared from users table.')
+            print('All non-admin user data cleared from users table.')
+        elif sys.argv[1] == 'make_admin':
+            if len(sys.argv) < 3:
+                print('Usage: python app.py make_admin <email>')
+                sys.exit(1)
+            email = sys.argv[2]
+            conn = get_db_connection()
+            conn.execute("UPDATE users SET admin = 1 WHERE email = ?", (email,))
+            conn.commit()
+            conn.close()
+            print(f'User {email} set as admin.')
         else:
             print('Unknown debug command.')
     else:

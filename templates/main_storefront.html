@@ -234,9 +234,9 @@
 <body>
     <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
         <div style="display: flex; align-items: center; flex: 1;">
-            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700;">Collectors Delight</a>
+            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
         </div>
-        
         <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
             <div class="search-container" style="max-width: 500px; width: 100%;">
                 <div class="input-group input-group-lg">
@@ -247,11 +247,19 @@
                 </div>
             </div>
         </div>
-        
         <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
             {% if session.get('user') %}
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333;">{{ session['user'] }}</span>
+                    {% if session.get('is_admin') %}
+                    <a href="/admin" style="text-decoration: none;">
+                        <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa fa-cogs"></i> Admin Panel
+                        </button>
+                    </a>
+                    {% endif %}
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
+                        {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
+                    </span>
                     <a href="#" style="text-decoration: none;">
                         <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                             <i class="fa fa-user"></i>
@@ -371,7 +379,7 @@
                                 <div class="product-artist">{{ product.original_artist }}</div>
                                 <div class="product-price">${{ "{:,}".format(product.price) }}</div>
                                 <div class="product-tags">
-                                    <span class="product-tag">{{ product.orientation.title() if product.orientation else 'Unknown' }}</span>
+                                    <span class="product-tag">{{ product.painting_orientation.title() if product.painting_orientation else 'Unknown' }}</span>
                                     <span class="product-tag">{{ product.price_range if product.price_range else 'Unknown' }}</span>
                                     <span class="product-tag">{{ product.date_category if product.date_category else 'Unknown' }}</span>
                                     <span class="product-tag">{{ product.art_movement if product.art_movement else 'Unknown' }}</span>
