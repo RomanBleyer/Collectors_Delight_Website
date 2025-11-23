@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Collectors Delight</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -13,11 +13,10 @@
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #F0AD64, #FBC87A);
+            background-color: #F8F8F0;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
         }
         
         .signup-container {
@@ -191,134 +190,149 @@
     </style>
 </head>
 <body>
-    <div class="back-home">
-        <a href="#" onclick="window.history.back(); return false;">
-            <i class="fa fa-arrow-left"></i>
-            Back
-        </a>
-    </div>
-    
-    <div class="signup-container" style="max-width: 500px; margin: 60px auto;">
-        <div class="signup-form-section" style="width: 100%;">
-            <h1 class="form-title">Join Us</h1>
-            <p class="form-subtitle">Create your Collectors Delight account</p>
-            
-            <form action="/signup" method="POST" onsubmit="setRedirectReferrer(this)">
-                <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
-                        <label class="form-label" for="first_name">First Name</label>
-                        <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name here" required value="{{ request.form.first_name if request.form.first_name is defined else '' }}">
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label class="form-label" for="last_name">Last Name</label>
-                        <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name here" required value="{{ request.form.last_name if request.form.last_name is defined else '' }}">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="email">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required value="{{ request.form.email if request.form.email is defined else '' }}">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <div style="position: relative;">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required style="padding-right: 40px;" value="{{ request.form.password if request.form.password is defined else '' }}">
-                        <input type="hidden" id="password_visible" name="password_visible" value="{{ request.form.password_visible if request.form.password_visible is defined else '0' }}">
-                        <button type="button" onclick="togglePassword('password', this, 'password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="confirm_password">Confirm Password</label>
-                    <div style="position: relative;">
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required style="padding-right: 40px;">
-                        <input type="hidden" id="confirm_password_visible" name="confirm_password_visible" value="{{ request.form.confirm_password_visible if request.form.confirm_password_visible is defined else '0' }}">
-                        <button type="button" onclick="togglePassword('confirm_password', this, 'confirm_password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                
-
-                <div class="form-check mb-3" style="margin-top: 10px;">
-                    <input class="form-check-input" type="checkbox" id="terms" required>
-                    <label class="form-check-label" for="terms">
-                        I agree to the <a href="/terms">Terms of Service and Privacy Policy</a>
-                    </label>
-                </div>
-                
-                <input type="hidden" name="redirect_referrer" id="signup_redirect_referrer">
-                <button type="submit" class="btn btn-signup">
-                    <i class="fa fa-user-plus me-2"></i>
-                    Create Account
-                </button>
-                {% if error %}
-                <div class="alert alert-danger" role="alert" style="margin-top: 20px;">
-                    {% if error is string %}
-                        {{ error }}
-                    {% elif error is sequence %}
-                        <ul style="margin-bottom:0; padding-left: 20px;">
-                        {% for err in error %}
-                            <li>{{ err }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </form>
-            
-            <div class="divider">
-                <span>or</span>
-            </div>
-            
-            <div class="login-link">
-                <p>Already have an account? <a href="/login">Sign in here</a></p>
+    <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
+            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+        </div>
+        <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
+                <a href="/storefront" style="text-decoration: none;">
+                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center; background-color: #678FD8; color: white; border: none;">
+                        Storefront
+                    </button>
+                </a>
+                <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
+                    <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none; font-weight: 500;" autocomplete="off">
+                    <button class="btn btn-outline-secondary btn-lg" type="submit" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none; color: #888; background: white; font-weight: 500;">
+                    </button>
+                    <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
+                </form>
             </div>
         </div>
-        
-        <!-- Removed Join Our Community section -->
-    <script>
-    function setRedirectReferrer(form) {
-        var ref = document.referrer;
-        if (ref && ref !== window.location.href) {
-            form.redirect_referrer.value = ref;
-        }
-    }
-    function togglePassword(fieldId, btn, hiddenId) {
-        var input = document.getElementById(fieldId);
-        var icon = btn.querySelector('i');
-        var hidden = document.getElementById(hiddenId);
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-            if (hidden) hidden.value = '1';
-        } else {
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-            if (hidden) hidden.value = '0';
-        }
-    }
-    // On page load, restore eye state
-    window.addEventListener('DOMContentLoaded', function() {
-        var pwVisible = "{{ request.form.password_visible if request.form.password_visible is defined else '0' }}";
-        var cpwVisible = "{{ request.form.confirm_password_visible if request.form.confirm_password_visible is defined else '0' }}";
-        if (pwVisible === '1') {
-            var pwInput = document.getElementById('password');
-            var pwBtn = pwInput && pwInput.parentElement.querySelector('button');
-            if (pwInput && pwBtn) togglePassword('password', pwBtn, 'password_visible');
-        }
-        if (cpwVisible === '1') {
-            var cpwInput = document.getElementById('confirm_password');
-            var cpwBtn = cpwInput && cpwInput.parentElement.querySelector('button');
-            if (cpwInput && cpwBtn) togglePassword('confirm_password', cpwBtn, 'confirm_password_visible');
-        }
-    });
-    </script>
+        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+            <a href="/login" style="text-decoration: none;">
+                <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                    <i class="fa fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </a>
+            <a href="/signup" style="text-decoration: none;">
+                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
+                    <i class="fa fa-user-plus"></i>
+                    Sign Up
+                </button>
+            </a>
+            <a href="/cart" style="text-decoration: none;">
+                <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                    <i class="fa fa-shopping-cart"></i>
+                    View Cart
+                </button>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-content" style="padding-top: 100px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+        <div class="signup-container" style="max-width: 500px; margin: 60px auto;">
+            <div class="signup-form-section" style="width: 100%;">
+                <h1 class="form-title">Join Us</h1>
+                <p class="form-subtitle">Create your Collectors Delight account</p>
+                <form action="/signup" method="POST" onsubmit="setRedirectReferrer(this)">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label" for="first_name">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name here" required value="{{ request.form.first_name if request.form.first_name is defined else '' }}">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label" for="last_name">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name here" required value="{{ request.form.last_name if request.form.last_name is defined else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required value="{{ request.form.email if request.form.email is defined else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required style="padding-right: 40px;" value="{{ request.form.password if request.form.password is defined else '' }}">
+                            <input type="hidden" id="password_visible" name="password_visible" value="{{ request.form.password_visible if request.form.password_visible is defined else '0' }}">
+                            <button type="button" onclick="togglePassword('password', this, 'password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirm_password">Confirm Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required style="padding-right: 40px;">
+                            <input type="hidden" id="confirm_password_visible" name="confirm_password_visible" value="{{ request.form.confirm_password_visible if request.form.confirm_password_visible is defined else '0' }}">
+                            <button type="button" onclick="togglePassword('confirm_password', this, 'confirm_password_visible')" tabindex="-1" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer;">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-check mb-3" style="margin-top: 10px;">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            I agree to the <a href="/terms">Terms of Service and Privacy Policy</a>
+                        </label>
+                    </div>
+                    <input type="hidden" name="redirect_referrer" id="signup_redirect_referrer">
+                    <button type="submit" class="btn btn-signup">
+                        <i class="fa fa-user-plus me-2"></i>
+                        Create Account
+                    </button>
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert" style="margin-top: 20px;">
+                        {% if error is string %}
+                            {{ error }}
+                        {% elif error is sequence %}
+                            <ul style="margin-bottom:0; padding-left: 20px;">
+                            {% for err in error %}
+                                <li>{{ err }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </form>
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                <div class="login-link">
+                    <p>Already have an account? <a href="/login">Sign in here</a></p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px; margin-top: auto;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="display: flex; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; gap: 80px;">
+                <div style="display: flex; flex-direction: row; align-items: flex-start; min-width: 450px; margin-bottom: 30px; gap: 40px;">
+                    <div style="min-width: 250px;">
+                        <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">Collectors Delight</h2>
+                    </div>
+                    <div style="min-width: 160px;"></div>
+                    <div style="min-width: 200px;">
+                        <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Page Links</h4>
+                        <p style="margin: 5px 0;"><a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Home</a></p>
+                        <p style="margin: 5px 0;"><a href="/storefront" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Storefront</a></p>
+                        <p style="margin: 5px 0;"><a href="/cart" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Cart</a></p>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
+                    <p style="margin: 5px 0;"><a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Login</a></p>
+                    <p style="margin: 5px 0;"><a href="/signup" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Sign Up</a></p>
+                    <p style="margin: 5px 0;"><a href="/terms" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Terms & Conditions</a></p>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; text-align: center;">
+                <p style="color: rgba(255,255,255,0.7); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 0;">© 2025 Collectors Delight. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

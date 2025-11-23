@@ -11,23 +11,23 @@
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Poppins', sans-serif;">
 
+
     <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
         <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
             <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
             <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
         </div>
-    
     <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
         <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
-            <a href="/category_results" style="text-decoration: none;">
-                <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center;">
-                    <i class="fa fa-tags"></i> Category Results
+            <a href="/storefront" style="text-decoration: none;">
+                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center; background-color: #678FD8; color: white; border: none;">
+                    Storefront
                 </button>
             </a>
             <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
-                <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none;" autocomplete="off">
-                <button class="btn btn-outline-secondary btn-lg" type="submit" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none;">
-                    <i class="fa fa-search"></i>
+                <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none; font-weight: 500;" autocomplete="off">
+                <button class="btn btn-outline-secondary btn-lg" type="submit" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none; color: #888; background: white; font-weight: 500;">
                 </button>
                 <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
             </form>
@@ -45,18 +45,7 @@
                 fetch(`/search_suggestions?q=${encodeURIComponent(val)}`)
                     .then(res => res.json())
                     .then(data => {
-                        suggestions = data;
-                        if (suggestions.length === 0) {
-                            suggestionsBox.style.display = 'none';
-                            return;
-                        }
-                        suggestionsBox.innerHTML = suggestions.map((s, i) => `
-                            <div class="d-flex align-items-center px-3 py-2 suggestion-item" style="cursor:pointer;" data-index="${i}">
-                                <img src="/static/Product Images/${s.image}" alt="${s.name}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;margin-right:12px;">
-                                <span style="font-weight:600;">${s.name}</span>
-                            </div>
-                        `).join('');
-                        suggestionsBox.style.display = 'block';
+                        /* Lines 268-280 omitted */
                         activeIndex = -1;
                     });
             });
@@ -77,14 +66,10 @@
             });
             suggestionsBox.addEventListener('mousedown', function(e) {
                 const item = e.target.closest('.suggestion-item');
-                if (item) {
-                    selectSuggestion(parseInt(item.dataset.index));
-                }
+                if (item) {/* Lines 301-302 omitted */}
             });
             document.addEventListener('click', function(e) {
-                if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
-                    suggestionsBox.style.display = 'none';
-                }
+                if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {/* Lines 306-307 omitted */}
             });
             function updateActive() {
                 Array.from(suggestionsBox.children).forEach((el, i) => {
@@ -92,49 +77,38 @@
                 });
             }
             function selectSuggestion(idx) {
-                if (suggestions[idx]) {
-                    window.location.href = `/product/${suggestions[idx].id}`;
-                }
+                if (suggestions[idx]) {/* Lines 316-317 omitted */}
             }
             </script>
         </div>
     </div>
-    
     <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
         {% if session.get('user') %}
             <div style="display: flex; align-items: center; gap: 10px;">
                 {% if session.get('is_admin') %}
                 <a href="/admin" style="text-decoration: none;">
-                    <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa fa-cogs"></i> Admin Panel
-                    </button>
+                    /* Lines 327-330 omitted */
                 </a>
                 {% endif %}
                 <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
-                    {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
+                    /* Lines 333-334 omitted */
                 </span>
                 <a href="#" style="text-decoration: none;">
-                    <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                        <i class="fa fa-user"></i>
-                    </button>
+                    /* Lines 336-339 omitted */
                 </a>
                 <a href="/logout" style="text-decoration: none;">
-                    <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
-                        <i class="fa fa-sign-out-alt"></i> Logout
-                    </button>
+                    /* Lines 341-344 omitted */
                 </a>
             </div>
         {% else %}
             <a href="/login" style="text-decoration: none;">
                 <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                    <i class="fa fa-sign-in-alt"></i>
-                    Login
+                    /* Lines 349-351 omitted */
                 </button>
             </a>
             <a href="/signup" style="text-decoration: none;">
                 <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
-                    <i class="fa fa-user-plus"></i>
-                    Sign Up
+                    /* Lines 355-357 omitted */
                 </button>
             </a>
         {% endif %}
@@ -145,124 +119,95 @@
             </button>
         </a>
     </div>
-</nav>
-<img src="{{ url_for('static', filename='Website Images/Homepage_Title_Painting.png') }}" alt="Homepage Title Painting" style="width: 100%; height: 100vh; object-fit: cover; margin: 0; padding: 0;">
+    </nav>
+<div style="position: relative; width: 100%; height: 100vh; margin: 0; padding: 0;">
+    <img src="{{ url_for('static', filename='Website Images/homepage_image_two.png') }}" alt="Homepage Artwork" style="width: 100%; height: 100vh; object-fit: cover; margin: 0; padding: 0; display: block;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.45); pointer-events: none;"></div>
+</div>
 <h1 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; text-align: center; margin: 0; z-index: 500;">Collectors Delight</h1>
-<a href="/storefront" style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); background-color: #7BA7D7; color: white; font-family: 'Poppins', sans-serif; font-size: 1.2rem; font-weight: 500; padding: 15px 30px; border: none; border-radius: 25px; cursor: pointer; z-index: 500; text-decoration: none; display: inline-block;">Browse Your Next Purchase</a>
-<div style="background: linear-gradient(135deg, #F0AD64, #FBC87A); padding: 60px 20px 80px 20px;">
-    <h1 style="color: white; font-family: 'Poppins', sans-serif; font-size: 5rem; font-weight: 700; text-align: center; margin: 0;">Featured Artworks</h1>
-    
-    <div style="display: flex; justify-content: center; gap: 50px; margin-top: 80px; flex-wrap: wrap;">
-        {% for product in products %}
-            {% if product.name == "Infante and Dog" or product.name == "Landscape with Cottages" or product.name == "Still Life: Vanitas" %}
-        <div style="background-color: white; border-radius: 15px; padding: 30px; width: 350px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column;">
-            <div style="height: 280px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px;">
-                {% if product.painting_orientation.lower() == "portrait" %}
-                <img src="{{ url_for('static', filename='Product Images/' + product.image) }}" alt="{{ product.name }}" style="width: 80%; max-height: 100%; object-fit: contain; border-radius: 8px;">
-                {% elif product.painting_orientation.lower() == "landscape" %}
-                <img src="{{ url_for('static', filename='Product Images/' + product.image) }}" alt="{{ product.name }}" style="width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">
-                {% elif product.painting_orientation.lower() == "square" %}
-                <img src="{{ url_for('static', filename='Product Images/' + product.image) }}" alt="{{ product.name }}" style="width: 85%; max-height: 100%; object-fit: contain; border-radius: 8px;">
-                {% else %}
-                <img src="{{ url_for('static', filename='Product Images/' + product.image) }}" alt="{{ product.name }}" style="width: 90%; max-height: 100%; object-fit: contain; border-radius: 8px;">
-                {% endif %}
+<a href="/storefront" style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); background-color: #7BA7D7; color: white; font-family: 'Poppins', sans-serif; font-size: 1.2rem; font-weight: 500; padding: 15px 30px; border: none; border-radius: 25px; cursor: pointer; z-index: 500; text-decoration: none; display: inline-block;">Shop Now</a>
+<div style="background-color: #F8F8F0; padding: 60px 20px 80px 20px;">
+    <h1 style="color: #000; font-family: 'Poppins', sans-serif; font-size: 5rem; font-weight: 700; text-align: center; margin: 0;">Featured Artworks</h1>
+    <div style="display: flex; justify-content: center; gap: 50px; margin-top: 80px; flex-wrap: nowrap;">
+        {% for product in featured_products %}
+        <div class="product-card" style="background-color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; display: flex; flex-direction: column;">
+            <div class="product-image" style="width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ url_for('static', filename='Product_Images/' + product.image) }}"
+                     alt="{{ product.name }}" 
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
             </div>
-            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; color: #333; margin: 0 0 10px 0;">{{ product.name }}</h3>
-                    <p style="font-family: 'Poppins', sans-serif; font-size: 1rem; color: #666; margin: 0 0 20px 0;">Artist: {{ product.original_artist }}</p>
+            <div class="product-info" style="padding: 25px 20px 20px 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;">
+                <div class="product-content" style="flex-grow: 1;">
+                    <div class="product-name" style="font-size: 1.2rem; font-weight: 600; color: #333; margin-bottom: 5px; margin-top: 0;">{{ product.name }}</div>
+                    <div class="product-artist" style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">{{ product.original_artist }}</div>
+                    <div class="product-price" style="font-size: 1.1rem; font-weight: 700; color: #7BA7D7; margin-bottom: 15px;">${{ "{:,}".format(product.price) }}</div>
+                    <div class="product-tags" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px;">
+                        {% set tags = [
+                            (product.painting_orientation.title() if product.painting_orientation else 'Unknown'),
+                            (product.price_range if product.price_range else 'Unknown'),
+                            (product.date_category if product.date_category else 'Unknown'),
+                            (product.art_movement if product.art_movement else 'Unknown'),
+                            (product.painting_type if product.painting_type else 'Unknown')
+                        ] %}
+                        {% for tag in tags %}
+                            {% if tag != 'Other' and tag != 'Unknown' %}
+                                <span class="product-tag" style="background: #f8f9fa; color: #666; padding: 3px 8px; border-radius: 10px; font-size: 0.8rem; border: 1px solid #e0e0e0;">{{ tag }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
-                <div>
-                    <p style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 700; color: #7BA7D7; margin: 0 0 20px 0;">${{ "{:,.0f}".format(product.price) }}</p>
-                    <a href="/add_to_cart/{{ product.id }}" style="display: inline-block; background-color: #7BA7D7; color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 500; padding: 15px 30px; border: none; border-radius: 25px; text-decoration: none; width: 80%; text-align: center;">Add to cart</a>
+                <div class="d-flex gap-2">
+                    <a href="/add_to_cart/{{ product.id }}" class="add-to-cart-btn" style="background-color: #7BA7D7; border: none; margin-top: auto; color: white; padding: 15px 0; border-radius: 8px; font-weight: 600; width: 75%; transition: all 0.3s; text-decoration: none; text-align: center; height: 50px; display: flex; align-items: center; justify-content: center;">
+                        Add to Cart
+                    </a>
+                    <a href="/product/{{ product.id }}" class="btn btn-outline-secondary" style="border-radius: 8px; font-weight: 600; height: 50px; width: 25%; display: flex; align-items: center; justify-content: center; padding: 0; text-align: center;">
+                        Details
+                    </a>
                 </div>
             </div>
         </div>
-            {% endif %}
         {% endfor %}
     </div>
 </div>
-<div style="background-color: #F8F8F8; padding: 100px 10px;">
+<div style="background-color: white; padding: 100px 10px;">
     <div style="max-width: 95%; margin: 0 auto; text-align: center;">
-        <h1 style="color: #333; font-family: 'Poppins', sans-serif; font-size: 3.5rem; font-weight: 700; margin: 0 0 30px 0;">About lost & found marketplace</h1>
-        <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 1.1rem; line-height: 1.6; margin: 0 0 80px 0; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Our mission goes here. In fact, we grow most of them ourselves on our 17-acre farm! Our mission goes here. In fact, we grow most of them ourselves on our 17-acre farm!
-        </p>
-        
-        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: nowrap; max-width: 100%; margin: 0 auto;">
-            <div style="background-color: #F0F0F0; padding: 40px 20px; border-radius: 15px; flex: 1; max-width: 320px; text-align: center;">
-                <div style="color: #7BA7D7; font-size: 3rem; margin-bottom: 20px;">✓</div>
-                <h3 style="color: #333; font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; margin: 0 0 15px 0;">Easy search</h3>
-                <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 0.95rem; line-height: 1.5; margin: 0;">
-                    Curators of objects once lost, now found and all things perfect for simple, beautiful home.
-                </p>
-            </div>
-            
-            <div style="background-color: #F0F0F0; padding: 40px 20px; border-radius: 15px; flex: 1; max-width: 320px; text-align: center;">
-                <div style="color: #7BA7D7; font-size: 3rem; margin-bottom: 20px;">✓</div>
-                <h3 style="color: #333; font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; margin: 0 0 15px 0;">Trusted</h3>
-                <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 0.95rem; line-height: 1.5; margin: 0;">
-                    Curators of objects once lost, now found and all things perfect for simple, beautiful home.
-                </p>
-            </div>
-            
-            <div style="background-color: #F0F0F0; padding: 40px 20px; border-radius: 15px; flex: 1; max-width: 320px; text-align: center;">
-                <div style="color: #7BA7D7; font-size: 3rem; margin-bottom: 20px;">✓</div>
-                <h3 style="color: #333; font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; margin: 0 0 15px 0;">Location based</h3>
-                <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 0.95rem; line-height: 1.5; margin: 0;">
-                    Curators of objects once lost, now found and all things perfect for simple, beautiful home.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-<div style="background-color: #2E3A59; padding: 100px 10px;">
-    <div style="max-width: 95%; margin: 0 auto; text-align: center;">
-        <h1 style="color: white; font-family: 'Poppins', sans-serif; font-size: 3.5rem; font-weight: 700; text-align: center; margin: 0 0 60px 0;">You can trust us to bring quality</h1>
+        <h1 style="color: black; font-family: 'Poppins', sans-serif; font-size: 3.5rem; font-weight: 700; text-align: center; margin: 0 0 60px 0;">You can trust us to bring quality</h1>
         
         <div style="display: flex; justify-content: center; gap: 80px; flex-wrap: nowrap; max-width: 100%; margin: 0 auto;">
-            <div style="text-align: center; flex: 1; max-width: 300px;">
-                <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">15,000+</h2>
-                <p style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">found items</p>
+            <div style="background-color: #F8F8F0; text-align: center; flex: 1; max-width: 300px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
+                <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">50</h2>
+                <p style="color: black; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">successful artifact acquisitions</p>
             </div>
-            
-            <div style="text-align: center; flex: 1; max-width: 300px;">
-                <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">27/7</h2>
-                <p style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">found items</p>
+            <div style="background-color: #F8F8F0; text-align: center; flex: 1; max-width: 300px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
+                <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">24/7</h2>
+                <p style="color: black; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">Service</p>
             </div>
-            
-            <div style="text-align: center; flex: 1; max-width: 300px;">
+            <div style="background-color: #F8F8F0; text-align: center; flex: 1; max-width: 300px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
                 <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">100%</h2>
-                <p style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">found items</p>
+                <p style="color: black; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">customer satisfaction guaranteed</p>
             </div>
         </div>
     </div>
 </div>
 <footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px;">
     <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px;">
-            <div style="flex: 1; min-width: 250px; margin-bottom: 30px;">
-                <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 400; margin: 0;">lost<span style="font-weight: 700;">&amp;FOUND</span></h2>
+        <div style="display: flex; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; gap: 80px;">
+            <div style="display: flex; flex-direction: row; align-items: flex-start; min-width: 450px; margin-bottom: 30px; gap: 40px;">
+                <div style="min-width: 250px;">
+                    <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">Collectors Delight</h2>
+                </div>
+                <div style="min-width: 160px;"></div>
+                <div style="min-width: 200px;">
+                    <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Page Links</h4>
+                    <p style="margin: 5px 0;"><a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Home</a></p>
+                    <p style="margin: 5px 0;"><a href="/storefront" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Storefront</a></p>
+                    <p style="margin: 5px 0;"><a href="/cart" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Cart</a></p>
+                </div>
             </div>
-            
             <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
-                <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Footer links</h4>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-            </div>
-            
-            <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
-                <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Footer links</h4>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-            </div>
-            
-            <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
-                <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Footer links</h4>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
-                <p style="color: rgba(255,255,255,0.8); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 5px 0;">footer links</p>
+                <p style="margin: 5px 0;"><a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Login</a></p>
+                <p style="margin: 5px 0;"><a href="/signup" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Sign Up</a></p>
+                <p style="margin: 5px 0;"><a href="/terms" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Terms & Conditions</a></p>
             </div>
         </div>
         

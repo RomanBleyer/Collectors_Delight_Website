@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #F0AD64, #FBC87A);
+            background-color: #F8F8F0;
             min-height: 100vh;
         }
         .product-card {
@@ -31,6 +31,11 @@
             font-size: 1.1rem;
             margin-bottom: 24px;
             transition: background 0.2s, border-color 0.2s;
+            min-height: 500px;
+            min-width: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .dropzone.dragover {
             background: #e3f0ff;
@@ -67,11 +72,141 @@
     </style>
 </head>
 <body>
-    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
+            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+        </div>
+        <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
+                <a href="/storefront" style="text-decoration: none;">
+                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center; background-color: #678FD8; color: white; border: none;">
+                        Storefront
+                    </button>
+                </a>
+                <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
+                    <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px; border: 1px solid #ddd; font-weight: 500;" autocomplete="off">
+                    <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
+                </form>
+                <script>
+                const searchInput = document.getElementById('search');
+                const suggestionsBox = document.getElementById('search-suggestions');
+                let activeIndex = -1;
+                let suggestions = [];
+                searchInput.addEventListener('input', function() {
+                    const val = this.value.trim();
+                    if (val.length < 2) {
+                        suggestionsBox.style.display = 'none';
+                        return;
+                    }
+                    fetch(`/search_suggestions?q=${encodeURIComponent(val)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            suggestions = data;
+                            if (suggestions.length === 0) {
+                                suggestionsBox.style.display = 'none';
+                                return;
+                            }
+                            suggestionsBox.innerHTML = suggestions.map((s, i) => `
+                                <div class="d-flex align-items-center px-3 py-2 suggestion-item" style="cursor:pointer;" data-index="${i}">
+                                    <img src="/static/Product_Images/${s.image}" alt="${s.name}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;margin-right:12px;">
+                                    <span style="font-weight:600;">${s.name}</span>
+                                </div>
+                            `).join('');
+                            suggestionsBox.style.display = 'block';
+                            activeIndex = -1;
+                        });
+                });
+                searchInput.addEventListener('keydown', function(e) {
+                    if (suggestionsBox.style.display === 'none') return;
+                    if (e.key === 'ArrowDown') {
+                        activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
+                        updateActive();
+                        e.preventDefault();
+                    } else if (e.key === 'ArrowUp') {
+                        activeIndex = Math.max(activeIndex - 1, 0);
+                        updateActive();
+                        e.preventDefault();
+                    } else if (e.key === 'Enter' && activeIndex >= 0) {
+                        selectSuggestion(activeIndex);
+                        e.preventDefault();
+                    }
+                });
+                suggestionsBox.addEventListener('mousedown', function(e) {
+                    const item = e.target.closest('.suggestion-item');
+                    if (item) {
+                        selectSuggestion(parseInt(item.dataset.index));
+                    }
+                });
+                document.addEventListener('click', function(e) {
+                    if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+                        suggestionsBox.style.display = 'none';
+                    }
+                });
+                function updateActive() {
+                    Array.from(suggestionsBox.children).forEach((el, i) => {
+                        el.style.background = i === activeIndex ? '#f0f8ff' : '';
+                    });
+                }
+                function selectSuggestion(idx) {
+                    if (suggestions[idx]) {
+                        window.location.href = `/product/${suggestions[idx].id}`;
+                    }
+                }
+                </script>
+            </div>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+            {% if session.get('user') %}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    {% if session.get('is_admin') %}
+                    <a href="/admin" style="text-decoration: none;">
+                        <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa fa-cogs"></i> Admin Panel
+                        </button>
+                    </a>
+                    {% endif %}
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
+                        {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
+                    </span>
+                    <a href="#" style="text-decoration: none;">
+                        <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="fa fa-user"></i>
+                        </button>
+                    </a>
+                    <a href="/logout" style="text-decoration: none;">
+                        <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
+                            <i class="fa fa-sign-out-alt"></i> Logout
+                        </button>
+                    </a>
+                </div>
+            {% else %}
+                <a href="/login" style="text-decoration: none;">
+                    <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                        <i class="fa fa-sign-in-alt"></i>
+                        Login
+                    </button>
+                </a>
+                <a href="/signup" style="text-decoration: none;">
+                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
+                        <i class="fa fa-user-plus"></i>
+                        Sign Up
+                    </button>
+                </a>
+            {% endif %}
+            <a href="/cart" style="text-decoration: none;">
+                <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                    <i class="fa fa-shopping-cart"></i>
+                    View Cart
+                </button>
+            </a>
+        </div>
+    </nav>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh; margin-top: 100px;">
         <div class="row w-100 justify-content-center">
             <div class="col-lg-10">
                 <div class="product-card row g-4 align-items-center">
-                    <div class="col-md-6">
+                    <div class="col-md-6 d-flex align-items-center justify-content-center">
                         <div id="dropzone" class="dropzone">
                             <span id="dropzone-text">Drag & drop product image here or click to select</span>
                             <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;">
@@ -80,15 +215,6 @@
                     </div>
                     <div class="col-md-6">
                         <form method="post" enctype="multipart/form-data" id="addProductForm">
-                            <div class="mb-3">
-                                <label for="image" class="form-label">Upload Image</label>
-                                <!-- The main image input is hidden, and the drag-and-drop input is used for both preview and submission -->
-                                <input type="file" id="mainImageInput" name="image" class="form-control" accept="image/*" style="display:none;">
-                            </div>
-                            <div class="mb-3">
-                                <label for="image_url" class="form-label">Or Image URL/Filename</label>
-                                <input name="image_url" class="form-control" value="" placeholder="myphoto.jpg or /static/img/myphoto.jpg">
-                            </div>
                             <div class="mb-3" id="imagePreviewContainer" style="display:none;">
                                 <img id="imagePreview" src="" alt="product image" style="max-height:80px; margin-bottom:10px;">
                             </div>
@@ -102,7 +228,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="price" class="form-label">Price</label>
-                                <input type="number" class="form-control" id="price" name="price" required>
+                                <input type="text" class="form-control" id="price" name="price" required pattern="[0-9]*" inputmode="numeric">
                             </div>
                             <div class="mb-3">
                                 <label for="painting_orientation" class="form-label">Painting Orientation</label>
@@ -177,59 +303,77 @@
         </div>
     </div>
     <script>
-        // Drag and drop logic
-        const dropzone = document.getElementById('dropzone');
-        const imageInput = document.getElementById('imageInput');
-        const mainImageInput = document.getElementById('mainImageInput');
-        const previewImg = document.getElementById('previewImg');
-        const dropzoneText = document.getElementById('dropzone-text');
+        // Drag and drop logic for image preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropzone = document.getElementById('dropzone');
+            const imageInput = document.getElementById('imageInput');
+            const previewImg = document.getElementById('previewImg');
+            const dropzoneText = document.getElementById('dropzone-text');
 
-        dropzone.addEventListener('click', () => imageInput.click());
+            dropzone.addEventListener('click', function() {
+                imageInput.click();
+            });
 
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('dragover');
-        });
-        dropzone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-        });
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                imageInput.files = e.dataTransfer.files;
-                mainImageInput.files = e.dataTransfer.files;
-                showPreview(e.dataTransfer.files[0]);
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+            dropzone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            });
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    imageInput.files = e.dataTransfer.files;
+                    showPreview(e.dataTransfer.files[0]);
+                }
+            });
+            imageInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    showPreview(e.target.files[0]);
+                }
+            });
+            function showPreview(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    dropzoneText.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
             }
         });
-        imageInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                mainImageInput.files = e.target.files;
-                showPreview(e.target.files[0]);
-            }
-        });
-        function showPreview(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewImg.style.display = 'block';
-                dropzoneText.style.display = 'none';
-                document.getElementById('imagePreviewContainer').style.display = 'block';
-                document.getElementById('imagePreview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-        // Preview for image_url field
-        document.querySelector('input[name="image_url"]').addEventListener('input', function(e) {
-            const url = e.target.value.trim();
-            if (url) {
-                document.getElementById('imagePreviewContainer').style.display = 'block';
-                document.getElementById('imagePreview').src = url;
-            } else {
-                document.getElementById('imagePreviewContainer').style.display = 'none';
-            }
-        });
+    </script>
+
+            <footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px; margin-top: 60px;">
+                <div style="max-width: 1200px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; gap: 80px;">
+                        <div style="display: flex; flex-direction: row; align-items: flex-start; min-width: 450px; margin-bottom: 30px; gap: 40px;">
+                            <div style="min-width: 250px;">
+                                <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">Collectors Delight</h2>
+                            </div>
+                            <div style="min-width: 160px;"></div>
+                            <div style="min-width: 200px;">
+                                <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Page Links</h4>
+                                <p style="margin: 5px 0;"><a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Home</a></p>
+                                <p style="margin: 5px 0;"><a href="/storefront" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Storefront</a></p>
+                                <p style="margin: 5px 0;"><a href="/cart" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Cart</a></p>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
+                            <p style="margin: 5px 0;"><a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Login</a></p>
+                            <p style="margin: 5px 0;"><a href="/signup" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Sign Up</a></p>
+                            <p style="margin: 5px 0;"><a href="/terms" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Terms & Conditions</a></p>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; text-align: center;">
+                        <p style="color: rgba(255,255,255,0.7); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 0;">© 2025 Collectors Delight. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+
     </script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
 </body>

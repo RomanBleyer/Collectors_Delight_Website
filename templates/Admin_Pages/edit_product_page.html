@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #F0AD64, #FBC87A);
+            background-color: #F8F8F0;
             min-height: 100vh;
         }
         .product-card {
@@ -75,7 +75,7 @@
                         <div id="dropzone" class="dropzone">
                             <span id="dropzone-text" style="display: none;">Drag & drop product image here or click to select</span>
                             <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;">
-                            <img id="previewImg" class="preview-img" src="{{ url_for('static', filename='Product Images/' + product.image) }}" style="display:block;" />
+                            <img id="previewImg" class="preview-img" src="{{ url_for('static', filename='Product_Images/' + product.image) }}" style="display:block;" />
                         </div>
                     </div>
                     <div class="col-md-6">

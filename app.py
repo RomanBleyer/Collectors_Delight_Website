@@ -3,6 +3,7 @@ from flask import Flask, render_template, session, request, jsonify, redirect, u
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import random
 
 app = Flask(__name__)
 app.secret_key = 'some-idiot-told-me-to-change-this' 
@@ -14,9 +15,20 @@ def search_suggestions():
     conn = get_db_connection()
     suggestions = []
     if query and conn:
-        rows = conn.execute('SELECT id, name, image FROM products WHERE stock > 0 AND LOWER(name) LIKE ?', (f'%{query}%',)).fetchall()
+        rows = conn.execute('SELECT * FROM products WHERE stock > 0 AND LOWER(name) LIKE ?', (f'%{query}%',)).fetchall()
         for row in rows:
-            suggestions.append({'id': row['id'], 'name': row['name'], 'image': row['image']})
+            suggestions.append({
+                'id': row['id'],
+                'name': row['name'],
+                'image': row['image'],
+                'original_artist': row['original_artist'],
+                'price': row['price'],
+                'painting_orientation': row['painting_orientation'],
+                'price_range': row['price_range'],
+                'date_category': row['date_category'],
+                'art_movement': row['art_movement'],
+                'painting_type': row['painting_type']
+            })
         conn.close()
     return jsonify(suggestions)
 
@@ -102,14 +114,23 @@ def index():
     conn = get_db_connection()
     products = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
-    return render_template('main_homepage.html', products=products)
+    featured_products = random.sample(products, min(3, len(products)))
+    return render_template('main_homepage.html', products=products, featured_products=featured_products)
 
 @app.route('/storefront')
 def storefront():
+    from math import ceil
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
     conn = get_db_connection()
-    products = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
+    products_all = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
     conn.close()
-    return render_template('Search_And_Storefront_Pages/main_storefront.html', products=products)
+    total_products = len(products_all)
+    total_pages = ceil(total_products / per_page) if total_products > 0 else 1
+    start = (page - 1) * per_page
+    end = start + per_page
+    products = products_all[start:end]
+    return render_template('Search_And_Storefront_Pages/main_storefront.html', products=products, page=page, total_pages=total_pages)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -362,10 +383,18 @@ def checkout():
 def admin_panel():
     if not session.get('user') or not session.get('is_admin'):
         return redirect(url_for('index'))
+    from math import ceil
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
     conn = get_db_connection()
-    products = conn.execute('SELECT * FROM products').fetchall()
+    products_all = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
-    return render_template('Admin_Pages/admin_table_page.html', products=products)
+    total_products = len(products_all)
+    total_pages = ceil(total_products / per_page) if total_products > 0 else 1
+    start = (page - 1) * per_page
+    end = start + per_page
+    products = products_all[start:end]
+    return render_template('Admin_Pages/admin_table_page.html', products=products, page=page, total_pages=total_pages)
 
 
 
