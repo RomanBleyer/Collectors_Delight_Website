@@ -1,3 +1,138 @@
+<nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
+        <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+        <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+    </div>
+    <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 80px;">
+        <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px; height: 80px;">
+            <a href="/storefront" style="text-decoration: none;">
+                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center; background-color: #678FD8; color: white; border: none;">
+                    Storefront
+                </button>
+            </a>
+            <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative; display: flex; align-items: center; height: 80px; margin: 0;">
+                <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px; border: 1px solid #ddd; font-weight: 500; height: 44px; margin: auto 0;" autocomplete="off">
+                <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
+            </form>
+            <script>
+            const searchInput = document.getElementById('search');
+            const suggestionsBox = document.getElementById('search-suggestions');
+            let activeIndex = -1;
+            let suggestions = [];
+            searchInput.addEventListener('input', function() {
+                const val = this.value.trim();
+                if (val.length < 2) {
+                    suggestionsBox.style.display = 'none';
+                    return;
+                }
+                fetch(`/search_suggestions?q=${encodeURIComponent(val)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestions = data;
+                        if (suggestions.length === 0) {
+                            suggestionsBox.style.display = 'none';
+                            return;
+                        }
+                        suggestionsBox.innerHTML = suggestions.map((s, i) => `
+                            <div class="d-flex align-items-center px-3 py-2 suggestion-item" style="cursor:pointer;" data-index="${i}">
+                                <img src="/static/Product_Images/${s.image}" alt="${s.name}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;margin-right:12px;">
+                                <span style="font-weight:600;">${s.name}</span>
+                            </div>
+                        `).join('');
+                        suggestionsBox.style.display = 'block';
+                        activeIndex = -1;
+                    });
+            });
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // Prevent form submission on Enter
+                    e.preventDefault();
+                    return false;
+                }
+                if (suggestionsBox.style.display === 'none') return;
+                if (e.key === 'ArrowDown') {
+                    activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
+                    updateActive();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                    activeIndex = Math.max(activeIndex - 1, 0);
+                    updateActive();
+                    e.preventDefault();
+                } else if (e.key === 'Enter' && activeIndex >= 0) {
+                    selectSuggestion(activeIndex);
+                    e.preventDefault();
+                }
+            });
+            suggestionsBox.addEventListener('mousedown', function(e) {
+                const item = e.target.closest('.suggestion-item');
+                if (item) {
+                    selectSuggestion(parseInt(item.dataset.index));
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+            function updateActive() {
+                Array.from(suggestionsBox.children).forEach((el, i) => {
+                    el.style.background = i === activeIndex ? '#f0f8ff' : '';
+                });
+            }
+            function selectSuggestion(idx) {
+                if (suggestions[idx]) {
+                    window.location.href = `/product/${suggestions[idx].id}`;
+                }
+            }
+            </script>
+        </div>
+    </div>
+    <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+        {% if session.get('user') %}
+            <div style="display: flex; align-items: center; gap: 10px;">
+                {% if session.get('is_admin') %}
+                <a href="/admin" style="text-decoration: none;">
+                    <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-cogs"></i> Admin Panel
+                    </button>
+                </a>
+                {% endif %}
+                <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
+                    {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
+                </span>
+                <a href="#" style="text-decoration: none;">
+                    <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="fa fa-user"></i>
+                    </button>
+                </a>
+                <a href="/logout" style="text-decoration: none;">
+                    <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
+                        <i class="fa fa-sign-out-alt"></i> Logout
+                    </button>
+                </a>
+            </div>
+        {% else %}
+            <a href="/login" style="text-decoration: none;">
+                <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                    <i class="fa fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </a>
+            <a href="/signup" style="text-decoration: none;">
+                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
+                    <i class="fa fa-user-plus"></i>
+                    Sign Up
+                </button>
+            </a>
+        {% endif %}
+        <a href="/cart" style="text-decoration: none;">
+            <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                <i class="fa fa-shopping-cart"></i>
+                View Cart
+            </button>
+        </a>
+    </div>
+</nav>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,83 +160,25 @@
     </style>
 </head>
 <body>
-    <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
-            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
-            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
-        </div>
-        <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
-            <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
-                <a href="/storefront" style="text-decoration: none;">
-                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; padding: 8px 18px; font-size: 1rem; height:44px; display:flex; align-items:center; background-color: #678FD8; color: white; border: none;">
-                        Storefront
-                    </button>
-                </a>
-                <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
-                    <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none; font-weight: 500;" autocomplete="off">
-                    <button class="btn btn-outline-secondary btn-lg" type="submit" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none; color: #888; background: white; font-weight: 500;">
-                    </button>
-                    <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
-                </form>
-            </div>
-        </div>
-        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-            <a href="/login" style="text-decoration: none;">
-                <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                    <i class="fa fa-sign-in-alt"></i>
-                    Login
-                </button>
-            </a>
-            <a href="/signup" style="text-decoration: none;">
-                <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
-                    <i class="fa fa-user-plus"></i>
-                    Sign Up
-                </button>
-            </a>
-            <a href="/cart" style="text-decoration: none;">
-                <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                    <i class="fa fa-shopping-cart"></i>
-                    View Cart
-                </button>
-            </a>
-        </div>
-    </nav>
 
-    <div class="main-content" style="padding-top: 100px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
-        <h1 style="color: #678FD8; text-align: center; margin-bottom: 32px; font-size: 2.8rem; font-weight: 700;">Terms and Conditions</h1>
-        <div class="container">
-            <p>By using this website, you agree to the following terms and conditions:</p>
-            <ul style="margin-top: 24px; margin-bottom: 0; list-style: none; padding-left: 0;">
-                <li style="margin-bottom: 28px; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Acceptance of Terms</span>
-                    <span style="color: #333;">By accessing and using Collectors Delight, you accept and agree to be bound by these Terms and Conditions.</span>
-                </li>
-                <li style="margin-bottom: 28px; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Account Responsibility</span>
-                    <span style="color: #333;">You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account.</span>
-                </li>
-                <li style="margin-bottom: 28px; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Use of Content</span>
-                    <span style="color: #333;">All images, text, and other content on this website are for personal, non-commercial use only unless otherwise stated.</span>
-                </li>
-                <li style="margin-bottom: 28px; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Prohibited Activities</span>
-                    <span style="color: #333;">You agree not to use the website for any unlawful purpose or to violate any applicable laws or regulations.</span>
-                </li>
-                <li style="margin-bottom: 28px; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Privacy</span>
-                    <span style="color: #333;">Your personal information will be handled in accordance with our Privacy Policy.</span>
-                </li>
-                <li style="margin-bottom: 0; padding: 18px 22px; background: #F3F6FB; border-radius: 10px; box-shadow: 0 1px 4px rgba(123,167,215,0.07);">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: #678FD8; display: block; margin-bottom: 6px;">Changes to Terms</span>
-                    <span style="color: #333;">We reserve the right to update or modify these Terms and Conditions at any time without prior notice.</span>
-                </li>
-            </ul>
-        </div>
+    <div class="container" style="max-width: 800px; margin: 120px auto 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 40px;">
+        <h1 style="color: #678FD8; margin-bottom: 24px; text-align: center;">Terms and Conditions</h1>
+        <p>Welcome to Collectors Delight! Please read these terms and conditions carefully before using our website.</p>
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing or using our website, you agree to be bound by these terms and conditions and our privacy policy.</p>
+        <h2>2. User Accounts</h2>
+        <p>Users must provide accurate information when creating an account. You are responsible for maintaining the confidentiality of your account credentials.</p>
+        <h2>3. Purchases and Payments</h2>
+        <p>All purchases made through our website are subject to product availability and confirmation of the order price. Payment must be made in full before products are shipped.</p>
+        <h2>4. Intellectual Property</h2>
+        <p>All content, images, and materials on this website are the property of Collectors Delight or its licensors and may not be used without permission.</p>
+        <h2>5. Limitation of Liability</h2>
+        <p>Collectors Delight is not liable for any damages arising from the use of this website or the purchase of products.</p>
+        <h2>6. Changes to Terms</h2>
+        <p>We reserve the right to update these terms and conditions at any time. Changes will be posted on this page.</p>
     </div>
 
-    <footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px; margin-top: auto;">
+    <footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px; margin-top: 40px;">
         <div style="max-width: 1200px; margin: 0 auto;">
             <div style="display: flex; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; gap: 80px;">
                 <div style="display: flex; flex-direction: row; align-items: flex-start; min-width: 450px; margin-bottom: 30px; gap: 40px;">

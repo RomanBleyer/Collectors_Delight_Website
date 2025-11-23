@@ -11,13 +11,11 @@
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Poppins', sans-serif;">
 
-
-    <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
-            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
-            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
-        </div>
+<nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
+        <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+        <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+    </div>
     <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
         <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
             <a href="/storefront" style="text-decoration: none;">
@@ -26,9 +24,7 @@
                 </button>
             </a>
             <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
-                <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none; font-weight: 500;" autocomplete="off">
-                <button class="btn btn-outline-secondary btn-lg" type="submit" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none; color: #888; background: white; font-weight: 500;">
-                </button>
+                <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px; border: 1px solid #ddd; font-weight: 500;" autocomplete="off">
                 <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
             </form>
             <script>
@@ -45,11 +41,27 @@
                 fetch(`/search_suggestions?q=${encodeURIComponent(val)}`)
                     .then(res => res.json())
                     .then(data => {
-                        /* Lines 268-280 omitted */
+                        suggestions = data;
+                        if (suggestions.length === 0) {
+                            suggestionsBox.style.display = 'none';
+                            return;
+                        }
+                        suggestionsBox.innerHTML = suggestions.map((s, i) => `
+                            <div class="d-flex align-items-center px-3 py-2 suggestion-item" style="cursor:pointer;" data-index="${i}">
+                                <img src="/static/Product_Images/${s.image}" alt="${s.name}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;margin-right:12px;">
+                                <span style="font-weight:600;">${s.name}</span>
+                            </div>
+                        `).join('');
+                        suggestionsBox.style.display = 'block';
                         activeIndex = -1;
                     });
             });
             searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // Prevent form submission on Enter
+                    e.preventDefault();
+                    return false;
+                }
                 if (suggestionsBox.style.display === 'none') return;
                 if (e.key === 'ArrowDown') {
                     activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
@@ -66,10 +78,14 @@
             });
             suggestionsBox.addEventListener('mousedown', function(e) {
                 const item = e.target.closest('.suggestion-item');
-                if (item) {/* Lines 301-302 omitted */}
+                if (item) {
+                    selectSuggestion(parseInt(item.dataset.index));
+                }
             });
             document.addEventListener('click', function(e) {
-                if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {/* Lines 306-307 omitted */}
+                if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+                    suggestionsBox.style.display = 'none';
+                }
             });
             function updateActive() {
                 Array.from(suggestionsBox.children).forEach((el, i) => {
@@ -77,7 +93,9 @@
                 });
             }
             function selectSuggestion(idx) {
-                if (suggestions[idx]) {/* Lines 316-317 omitted */}
+                if (suggestions[idx]) {
+                    window.location.href = `/product/${suggestions[idx].id}`;
+                }
             }
             </script>
         </div>
@@ -87,28 +105,36 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 {% if session.get('is_admin') %}
                 <a href="/admin" style="text-decoration: none;">
-                    /* Lines 327-330 omitted */
+                    <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-cogs"></i> Admin Panel
+                    </button>
                 </a>
                 {% endif %}
                 <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
-                    /* Lines 333-334 omitted */
+                    {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
                 </span>
                 <a href="#" style="text-decoration: none;">
-                    /* Lines 336-339 omitted */
+                    <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        <i class="fa fa-user"></i>
+                    </button>
                 </a>
                 <a href="/logout" style="text-decoration: none;">
-                    /* Lines 341-344 omitted */
+                    <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
+                        <i class="fa fa-sign-out-alt"></i> Logout
+                    </button>
                 </a>
             </div>
         {% else %}
             <a href="/login" style="text-decoration: none;">
                 <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                    /* Lines 349-351 omitted */
+                    <i class="fa fa-sign-in-alt"></i>
+                    Login
                 </button>
             </a>
             <a href="/signup" style="text-decoration: none;">
                 <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
-                    /* Lines 355-357 omitted */
+                    <i class="fa fa-user-plus"></i>
+                    Sign Up
                 </button>
             </a>
         {% endif %}
@@ -119,16 +145,18 @@
             </button>
         </a>
     </div>
-    </nav>
-<div style="position: relative; width: 100%; height: 100vh; margin: 0; padding: 0;">
-    <img src="{{ url_for('static', filename='Website Images/homepage_image_two.png') }}" alt="Homepage Artwork" style="width: 100%; height: 100vh; object-fit: cover; margin: 0; padding: 0; display: block;">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.45); pointer-events: none;"></div>
-</div>
-<h1 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; text-align: center; margin: 0; z-index: 500;">Collectors Delight</h1>
-<a href="/storefront" style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); background-color: #7BA7D7; color: white; font-family: 'Poppins', sans-serif; font-size: 1.2rem; font-weight: 500; padding: 15px 30px; border: none; border-radius: 25px; cursor: pointer; z-index: 500; text-decoration: none; display: inline-block;">Shop Now</a>
-<div style="background-color: #F8F8F0; padding: 60px 20px 80px 20px;">
-    <h1 style="color: #000; font-family: 'Poppins', sans-serif; font-size: 5rem; font-weight: 700; text-align: center; margin: 0;">Featured Artworks</h1>
-    <div style="display: flex; justify-content: center; gap: 50px; margin-top: 80px; flex-wrap: nowrap;">
+</nav>
+
+<div style="padding-top: 100px;">
+    <div style="position: relative; width: 100%; height: 100vh; margin: 0; padding: 0; top: -100px;">
+        <img src="{{ url_for('static', filename='Website Images/homepage_image_two.png') }}" alt="Homepage Artwork" style="width: 100%; height: 100vh; object-fit: cover; margin: 0; padding: 0; display: block;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.45); pointer-events: none;"></div>
+        <h1 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; text-align: center; margin: 0; z-index: 500;">Collectors Delight</h1>
+        <a href="/storefront" style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); background-color: #7BA7D7; color: white; font-family: 'Poppins', sans-serif; font-size: 1.2rem; font-weight: 500; padding: 15px 30px; border: none; border-radius: 25px; cursor: pointer; z-index: 500; text-decoration: none; display: inline-block;">Shop Now</a>
+    </div>
+    <div style="background-color: #F8F8F0; padding: 60px 20px 80px 20px;">
+        <h1 style="color: #000; font-family: 'Poppins', sans-serif; font-size: 5rem; font-weight: 700; text-align: center; margin: 0;">Featured Artworks</h1>
+        <div style="display: flex; justify-content: center; gap: 50px; margin-top: 80px; flex-wrap: wrap;">
         {% for product in featured_products %}
         <div class="product-card" style="background-color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; display: flex; flex-direction: column;">
             <div class="product-image" style="width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;">
@@ -173,7 +201,7 @@
     <div style="max-width: 95%; margin: 0 auto; text-align: center;">
         <h1 style="color: black; font-family: 'Poppins', sans-serif; font-size: 3.5rem; font-weight: 700; text-align: center; margin: 0 0 60px 0;">You can trust us to bring quality</h1>
         
-        <div style="display: flex; justify-content: center; gap: 80px; flex-wrap: nowrap; max-width: 100%; margin: 0 auto;">
+        <div style="display: flex; justify-content: center; gap: 80px; flex-wrap: wrap; max-width: 100%; margin: 0 auto;">
             <div style="background-color: #F8F8F0; text-align: center; flex: 1; max-width: 300px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
                 <h2 style="color: #7BA7D7; font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700; margin: 0 0 10px 0;">50</h2>
                 <p style="color: black; font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin: 0;">successful artifact acquisitions</p>

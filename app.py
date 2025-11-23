@@ -6,8 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import random
 
 app = Flask(__name__)
-app.secret_key = 'some-idiot-told-me-to-change-this' 
-
+app.secret_key = 'some-idiot-told-me-to-change-this'
 
 @app.route('/search_suggestions')
 def search_suggestions():
@@ -32,7 +31,6 @@ def search_suggestions():
         conn.close()
     return jsonify(suggestions)
 
-# Route for single product view
 @app.route('/product/<int:product_id>')
 def single_product_view(product_id):
     conn = get_db_connection()
@@ -40,7 +38,7 @@ def single_product_view(product_id):
     conn.close()
     if not product:
         return redirect(url_for('storefront'))
-    return render_template('Search_And_Storefront_Pages/single_product_view.html', product=product)
+    return render_template('Product_Display_Pages/single_product_view.html', product=product)
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
@@ -60,7 +58,6 @@ def search():
     return render_template('Search_And_Storefront_Pages/main_search_results.html', results=results, search_term=query)
 
 
-# Route to render add product page and handle product addition
 @app.route('/admin/add_product', methods=['GET', 'POST'])
 def admin_add_product_page():
     if not session.get('user') or not session.get('is_admin'):
@@ -78,11 +75,10 @@ def admin_add_product_page():
         stock = int(request.form.get('stock', 1))
         description = request.form.get('description', '')
 
-        # Handle image upload
         if 'image' in request.files and request.files['image'].filename:
             image_file = request.files['image']
             image = image_file.filename
-            product_images_path = os.path.join('static', 'Product Images', image)
+            product_images_path = os.path.join('static', 'Product_Images', image)
             image_file.save(product_images_path)
 
         conn = get_db_connection()
@@ -91,9 +87,8 @@ def admin_add_product_page():
         conn.commit()
         conn.close()
         return redirect(url_for('admin_panel'))
-    return render_template('Admin_Pages/add_product_page.html')
+    return render_template('Admin_Pages/add_product.html')
 
-# Route to render edit product page
 @app.route('/admin/edit_product/<int:product_id>', methods=['GET'])
 def admin_edit_product_page(product_id):
     if not session.get('user') or not session.get('is_admin'):
@@ -103,7 +98,7 @@ def admin_edit_product_page(product_id):
     conn.close()
     if not product:
         return redirect(url_for('admin_panel'))
-    return render_template('Admin_Pages/edit_product_page.html', product=product)
+    return render_template('Admin_Pages/edit_product.html', product=product)
     
 @app.route('/terms')
 def terms():
@@ -115,22 +110,14 @@ def index():
     products = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
     featured_products = random.sample(products, min(3, len(products)))
-    return render_template('main_homepage.html', products=products, featured_products=featured_products)
+    return render_template('homepage.html', products=products, featured_products=featured_products)
 
 @app.route('/storefront')
 def storefront():
-    from math import ceil
-    page = request.args.get('page', 1, type=int)
-    per_page = 12
     conn = get_db_connection()
-    products_all = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
+    products = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
     conn.close()
-    total_products = len(products_all)
-    total_pages = ceil(total_products / per_page) if total_products > 0 else 1
-    start = (page - 1) * per_page
-    end = start + per_page
-    products = products_all[start:end]
-    return render_template('Search_And_Storefront_Pages/main_storefront.html', products=products, page=page, total_pages=total_pages)
+    return render_template('Product_Display_Pages/storefront.html', products=products)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -155,10 +142,9 @@ def login():
                 return redirect(url_for('index'))
         else:
             error = 'Invalid credentials.'
-    return render_template('User_Authentication_Pages/main_login.html', error=error)
+    return render_template('User_Authentication_Pages/login.html', error=error)
 
 
-# Logout route
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -166,7 +152,6 @@ def logout():
     session.pop('last_name', None)
     session.pop('is_admin', None)
     next_url = request.referrer or url_for('index')
-    # Avoid redirecting back to login or signup page after logout
     if next_url and ('/login' not in next_url and '/signup' not in next_url):
         return redirect(next_url)
     else:
@@ -220,7 +205,7 @@ def signup():
             except sqlite3.IntegrityError:
                 error = 'Email already registered.'
             conn.close()
-    return render_template('User_Authentication_Pages/main_signup.html', error=error)
+    return render_template('User_Authentication_Pages/signup.html', error=error)
 
 @app.route('/cart')
 def cart():
@@ -249,7 +234,7 @@ def cart():
     tax_amount = total_amount * 0.10
     final_total = total_amount + tax_amount
     
-    return render_template('Item_Purchase_Pages/main_cart.html', 
+    return render_template('Item_Purchase_Pages/cart.html', 
                          cart_products=cart_products, 
                          subtotal=total_amount,
                          tax=tax_amount,
@@ -305,10 +290,8 @@ def remove_from_cart(product_id):
     return redirect(url_for('cart'))
 
 
-# Debug CLI options
 
 
-# Checkout route
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     if not session.get('user'):
@@ -360,7 +343,7 @@ def checkout():
             conn.commit()
             conn.close()
             session['cart'] = []
-        return render_template('Item_Purchase_Pages/order_confirmation.html')
+        return render_template('Item_Purchase_Pages/checkout_confirmation.html')
     # GET: Show checkout form
     total_amount = 0
     if cart_items:
@@ -376,30 +359,20 @@ def checkout():
     user_email = session.get('user', '')
     first_name = session.get('first_name', '')
     last_name = session.get('last_name', '')
-    return render_template('Item_Purchase_Pages/main_checkout.html', total_cost="{:.2f}".format(final_total), user_email=user_email, first_name=first_name, last_name=last_name)
+    return render_template('Item_Purchase_Pages/checkout.html', total_cost="{:.2f}".format(final_total), user_email=user_email, first_name=first_name, last_name=last_name)
 
-# Admin panel route
 @app.route('/admin')
 def admin_panel():
     if not session.get('user') or not session.get('is_admin'):
         return redirect(url_for('index'))
-    from math import ceil
-    page = request.args.get('page', 1, type=int)
-    per_page = 12
     conn = get_db_connection()
-    products_all = conn.execute('SELECT * FROM products').fetchall()
+    products = conn.execute('SELECT * FROM products').fetchall()
     conn.close()
-    total_products = len(products_all)
-    total_pages = ceil(total_products / per_page) if total_products > 0 else 1
-    start = (page - 1) * per_page
-    end = start + per_page
-    products = products_all[start:end]
-    return render_template('Admin_Pages/admin_table_page.html', products=products, page=page, total_pages=total_pages)
+    return render_template('Admin_Pages/admin_table.html', products=products)
 
 
 
 
-# Edit product (GET handled elsewhere)
 @app.route('/admin/edit/<int:product_id>', methods=['POST'])
 def admin_edit_product(product_id):
     if not session.get('user') or not session.get('is_admin'):
@@ -416,12 +389,11 @@ def admin_edit_product(product_id):
     stock = int(request.form.get('stock', 1))
     description = request.form.get('description', '')
 
-    # Handle image upload
     image = request.form.get('current_image', '')
     if 'image' in request.files and request.files['image'].filename:
         image_file = request.files['image']
         image = image_file.filename
-        product_images_path = os.path.join('static', 'Product Images', image)
+        product_images_path = os.path.join('static', 'Product_Images', image)
         image_file.save(product_images_path)
 
     conn = get_db_connection()
@@ -444,7 +416,6 @@ def admin_edit_product(product_id):
     conn.close()
     return redirect(url_for('admin_panel'))
 
-# Delete product
 @app.route('/admin/delete/<int:product_id>', methods=['POST'])
 def admin_delete_product(product_id):
     if not session.get('user') or not session.get('is_admin'):
@@ -455,7 +426,6 @@ def admin_delete_product(product_id):
     conn.close()
     return redirect(url_for('admin_panel'))
 
-# Debug CLI options
 import sys
 if __name__ == '__main__':
     if len(sys.argv) > 1:

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Collectors Delight</title>
+    <title>Storefront - Collectors Delight</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -232,6 +232,7 @@
     </style>
 </head>
 <body>
+
     <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
         <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
             <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
@@ -278,6 +279,11 @@
                         });
                 });
                 searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        // Prevent form submission on Enter
+                        e.preventDefault();
+                        return false;
+                    }
                     if (suggestionsBox.style.display === 'none') return;
                     if (e.key === 'ArrowDown') {
                         activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
@@ -364,10 +370,7 @@
     </nav>
     
     <main style="padding-top: 80px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%;">
-        <h1 style="text-align: center; font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: #000000; margin: 40px auto 20px auto; width: 100%;">Admin Page</h1>
-        <div style="text-align: center; margin-bottom: 30px;">
-            <a href="/admin/add_product" class="btn btn-success btn-lg" style="font-family: 'Poppins', sans-serif; font-weight: 600; border-radius: 25px; padding: 12px 32px;">Add Product</a>
-        </div>
+        <h1 style="text-align: center; font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: black; margin: 40px auto; width: 100%;">Storefront</h1>
         
         <div class="storefront-content">
             <!-- Horizontal Filters Bar -->
@@ -428,7 +431,6 @@
                             <option value="Subject portrait">Subject Portrait</option>
                             <option value="Landscape Rendition">Landscape Rendition</option>
                             <option value="Object portrait">Object Portrait</option>
-                            <option value="Other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -439,64 +441,48 @@
                 <div class="products-grid" id="productsGrid">
                     <!-- Dynamic products from database, paginated -->
                     {% for product in products %}
-                    <div class="product-card{% if product.stock == 0 %} out-of-stock{% endif %}">
+                    <div class="product-card">
                         <div class="product-image">
-                            {% if product.image %}
-                                <img src="{{ url_for('static', filename='Product_Images/' ~ product.image) }}"
-                                     alt="{{ product.name }}" 
-                                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'">
-                            {% else %}
-                                <span>No Image</span>
-                            {% endif %}
+                            <img src="{{ url_for('static', filename='Product_Images/' + product.image) }}"
+                                 alt="{{ product.name }}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
                         </div>
-                        <div class="product-info"{% if product.stock == 0 %} style="font-style: italic;"{% endif %}>
+                        <div class="product-info">
                             <div class="product-content">
                                 <div class="product-name">{{ product.name }}</div>
                                 <div class="product-artist">{{ product.original_artist }}</div>
                                 <div class="product-price">${{ "{:,}".format(product.price) }}</div>
                                 <div class="product-tags">
-                                    <span class="product-tag">{{ product.painting_orientation.title() if product.painting_orientation else 'Unknown' }}</span>
-                                    <span class="product-tag">{{ product.price_range if product.price_range else 'Unknown' }}</span>
-                                    <span class="product-tag">{{ product.date_category if product.date_category else 'Unknown' }}</span>
-                                    <span class="product-tag">{{ product.art_movement if product.art_movement else 'Unknown' }}</span>
-                                    <span class="product-tag">{{ product.painting_type if product.painting_type else 'Unknown' }}</span>
+                                    {% set tags = [
+                                        (product.painting_orientation.title() if product.painting_orientation else 'Unknown'),
+                                        (product.price_range if product.price_range else 'Unknown'),
+                                        (product.date_category if product.date_category else 'Unknown'),
+                                        (product.art_movement if product.art_movement else 'Unknown'),
+                                        (product.painting_type if product.painting_type else 'Unknown')
+                                    ] %}
+                                    {% for tag in tags %}
+                                        {% if tag != 'Other' and tag != 'Unknown' %}
+                                            <span class="product-tag">{{ tag }}</span>
+                                        {% endif %}
+                                    {% endfor %}
                                 </div>
                             </div>
-                            <a href="/admin/edit_product/{{ product.id }}" class="add-to-cart-btn" style="text-decoration: none; color: inherit; display: inline-block; text-align: center; background-color: #f0ad4e; border-color: #f0ad4e;">
-                                <i class="fa fa-edit"></i> Edit
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="/add_to_cart/{{ product.id }}" class="add-to-cart-btn flex-fill" style="text-decoration: none; color: inherit; text-align: center;">
+                                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                                </a>
+                                <a href="/product/{{ product.id }}" class="btn btn-outline-secondary flex-fill" style="border-radius: 8px; font-weight: 600;">
+                                    Details
+                                </a>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
-                                <!-- Pagination Controls -->
-                                <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 40px;">
-                                    <nav aria-label="Page navigation">
-                                        <ul class="pagination" style="gap: 8px;">
-                                            {% if page > 1 %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ page - 1 }}" aria-label="Previous" style="border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 500;">
-                                                    <span aria-hidden="true">&laquo;</span>
-                                                </a>
-                                            </li>
-                                            {% endif %}
-                                            {% for p in range(1, total_pages + 1) %}
-                                            <li class="page-item {% if p == page %}active{% endif %}">
-                                                <a class="page-link" href="?page={{ p }}" style="border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 500;">{{ p }}</a>
-                                            </li>
-                                            {% endfor %}
-                                            {% if page < total_pages %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ page + 1 }}" aria-label="Next" style="border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 500;">
-                                                    <span aria-hidden="true">&raquo;</span>
-                                                </a>
-                                            </li>
-                                            {% endif %}
-                                        </ul>
-                                    </nav>
-                                </div>
                 </div>
             </div>
         </div>
+        <!-- Extra space before footer -->
+        <div style="height: 60px; width: 100%;"></div>
     </main>
     
     <script>
@@ -585,18 +571,21 @@
             $('#orientationFilter, #priceRangeFilter, #dateFilter, #artMovementFilter, #paintingTypeFilter').on('change', filterProducts);
         });
     </script>
-
-    <footer style="background: linear-gradient(90deg, #7BA7D7 0%, #678FD8 100%); color: white; padding: 50px 0 0 0; margin-top: 60px; width: 100%;">
-        <div style="max-width: 1300px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 40px; padding: 0 50px 30px 50px;">
-            <div style="min-width: 250px;">
-                <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">Collectors Delight</h2>
-            </div>
-            <div style="min-width: 160px;"></div>
-            <div style="min-width: 200px;">
-                <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Page Links</h4>
-                <p style="margin: 5px 0;"><a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Home</a></p>
-                <p style="margin: 5px 0;"><a href="/storefront" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Storefront</a></p>
-                <p style="margin: 5px 0;"><a href="/cart" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Cart</a></p>
+</body>
+<footer style="background-color: #6B8DD6; padding: 60px 20px 40px 20px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; gap: 80px;">
+            <div style="display: flex; flex-direction: row; align-items: flex-start; min-width: 450px; margin-bottom: 30px; gap: 40px;">
+                <div style="min-width: 250px;">
+                    <h2 style="color: white; font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">Collectors Delight</h2>
+                </div>
+                <div style="min-width: 160px;"></div>
+                <div style="min-width: 200px;">
+                    <h4 style="color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0;">Page Links</h4>
+                    <p style="margin: 5px 0;"><a href="/" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Home</a></p>
+                    <p style="margin: 5px 0;"><a href="/storefront" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Storefront</a></p>
+                    <p style="margin: 5px 0;"><a href="/cart" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Cart</a></p>
+                </div>
             </div>
             <div style="flex: 1; min-width: 200px; margin-bottom: 30px;">
                 <p style="margin: 5px 0;"><a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Login</a></p>
@@ -607,6 +596,6 @@
         <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; text-align: center;">
             <p style="color: rgba(255,255,255,0.7); font-family: 'Poppins', sans-serif; font-size: 0.9rem; margin: 0;">© 2025 Collectors Delight. All rights reserved.</p>
         </div>
-    </footer>
-</body>
+    </div>
+</footer>
 </html>
