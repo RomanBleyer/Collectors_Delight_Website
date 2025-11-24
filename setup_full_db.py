@@ -69,12 +69,12 @@ def create_database():
     cursor.execute('''
         INSERT INTO users (email, password, first_name, last_name, admin)
         VALUES (?, ?, ?, ?, 0)
-    ''', ("user@example.com", user_password_hash, "Test", "User"))
+    ''', ("user@example.com", user_password_hash, "John", "User"))
     cursor.execute('''
         INSERT INTO users (email, password, first_name, last_name, admin)
         VALUES (?, ?, ?, ?, 1)
-    ''', ("admin@example.com", admin_password_hash, "Admin", "User"))
-    print("Test user and test admin created with hashed passwords.")
+    ''', ("admin@example.com", admin_password_hash, "John", "Admin"))
+    print("John User and John Admin created with hashed passwords.")
     return conn
 
 def populate_products(conn):
