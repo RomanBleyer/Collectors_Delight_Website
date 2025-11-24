@@ -48,11 +48,3 @@ A Flask web application for art collectors to browse, filter, and purchase stole
 - `static/` - Static files (images, CSS, JS)
 - `templates/` - HTML templates
 
-## Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-MIT License
-
----
-For questions or support, contact RBleyer@student.saintaug.nsw.edu.au
